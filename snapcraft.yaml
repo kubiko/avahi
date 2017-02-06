@@ -18,7 +18,7 @@ apps:
         daemon: simple
         plugs: [network, network-bind, network-control]
 
-    avahi-daemon-restart:
+    restart-avahi-daemon:
         command: echo "run as root!" && avahi-daemon -r
         plugs: [network, network-bind, network-control]
 
