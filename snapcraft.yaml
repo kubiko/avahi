@@ -50,7 +50,7 @@ parts:
           - --disable-gobject
           - --sysconfdir=/var/snap/avahi-ondra/common/etc
           - --localstatedir=/var/snap/avahi-ondra/common/var
-        build-packages: [libexpat1-dev, libdaemon-dev, intltool, xmltoman]
+        build-packages: [gettext, intltool, libexpat1-dev, libdaemon-dev, libglib2.0-dev, xmltoman]
         organize:
           var/snap/avahi-ondra/common/etc: etc
           var/snap/avahi-ondra/common/var: var
