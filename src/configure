@@ -1,0 +1,46 @@
+#!/bin/bash
+
+set -x
+
+exec >> $SNAP_COMMON/configure-hook.log 2>&1
+echo -e "\n$(date '+%Y-%m-%d %H:%M:%S') configure-hook: Entering hook"
+
+mkdir -p $SNAP_COMMON/var/run/
+mkdir -p $SNAP_COMMON/etc
+
+if [ ! -d $SNAP_COMMON/etc/avahi ]; then
+    cp -r $SNAP/etc/avahi/ $SNAP_COMMON/etc
+fi
+
+VERSION=$(snapctl get version)
+# handle bug when snap uninstall will not clear value of 'version' key
+if [ "x$VERSION" == "x$SNAP_VERSION" ] && [ -e $SNAP_COMMON/etc/avahi/avahi-daemon.conf ]; then
+    echo "Handle config change"
+    # read key list
+    . $SNAP/bin/config
+    echo -e "Checking curretly defined keys"
+    for ((i=0;i<${#DEFINED_K[@]};++i)); do
+        value=$(snapctl get ${DEFINED_K[$i]})
+        if [ "x$value" != "x" ]; then
+            echo -e "\tupdating key: ${key} with ${value}"
+            cat $SNAP_COMMON/etc/avahi/avahi-daemon.conf | sed "s/.*${DEFINED_K[$i]}.*/${DEFINED_K[$i]}=${value}/g" > $SNAP_COMMON/etc/avahi/avahi-daemon.conf.back
+            cp $SNAP_COMMON/etc/avahi/avahi-daemon.conf.back $SNAP_COMMON/etc/avahi/avahi-daemon.conf
+            # sed --in-place 's/.*${DEFINED_K[$i]}.*/${DEFINED_K[$i]}=${value}/g' $SNAP_COMMON/etc/avahi/avahi-daemon.conf.back
+        fi
+    done
+
+    echo -e "Checking keys with no set value:"
+    for ((i=0;i<${#UNDEFINED_K[@]};++i)); do
+        value=$(snapctl get ${UNDEFINED_K[i]#?})
+        if [ "x$value" != "x" ]; then
+            echo -e "\tupdating key: ${UNDEFINED_K[i]#?} with $value"
+            cat $SNAP_COMMON/etc/avahi/avahi-daemon.conf | sed "s/.*${UNDEFINED_K[i]#?}.*/${UNDEFINED_K[i]#?}=${value}/g" > $SNAP_COMMON/etc/avahi/avahi-daemon.conf.back
+            # sed -i 's/.*${DEFINED_K[$i]}.*/${UNDEFINED_K[$i]#?}=${value}/g' $SNAP_COMMON/etc/avahi/avahi-daemon.conf.back
+            cp $SNAP_COMMON/etc/avahi/avahi-daemon.conf.back $SNAP_COMMON/etc/avahi/avahi-daemon.conf
+        fi
+    done
+else
+    # this is fresh install or update
+    echo "This is install/updae invocation"
+    snapctl set version=$SNAP_VERSION
+fi

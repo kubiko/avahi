@@ -1,0 +1,66 @@
+name: avahi-ondra
+version: "0.6.32"
+summary: avahi-daemon 
+description: |
+  avahi service daemon
+
+  Avahi is a free, LGPL implementation of DNS Service Discovery (DNS-SD RFC 6763) over Multicast DNS (mDNS RFC 6762),
+  commonly known as and compatible with Apple Bonjour primarily targetting Linux.
+
+  Copyright 2004-2015 by the Avahi developers.
+
+confinement: strict
+grade: devel
+
+apps:
+    avahi-daemon:
+        command: avahi-daemon -f $SNAP_COMMON/etc/avahi/avahi-daemon.conf --no-drop-root --debug
+        daemon: simple
+        plugs: [network, network-bind, network-control]
+
+    avahi-daemon-restart:
+        command: echo "run as root!" && avahi-daemon -r
+        plugs: [network, network-bind, network-control]
+
+    help:
+        command: avahi-help
+
+parts:
+    avahi:
+        plugin: autotools
+        source: https://github.com/kubiko/avahi.git
+        configflags:
+          - --prefix=/usr
+          - --disable-qt3
+          - --disable-qt4
+          - --disable-gtk
+          - --disable-gtk3
+          - --disable-gdbm
+          - --disable-python
+          - --disable-pygtk
+          - --disable-python-dbus
+          - --disable-mono
+          - --disable-monodoc
+          - --disable-manpages
+          - --disable-xmltoman
+          - --disable-dbus
+          - --with-avahi-user=root
+          - --with-avahi-group=root
+          - --with-distro=debian
+          - --disable-gobject
+          - --sysconfdir=/var/snap/avahi-ondra/common/etc
+          - --localstatedir=/var/snap/avahi-ondra/common/var
+        build-packages: [libexpat1-dev, libdaemon-dev, intltool, xmltoman]
+        organize:
+          var/snap/avahi-ondra/common/etc: etc
+          var/snap/avahi-ondra/common/var: var
+        stage:
+          - -var/snap
+
+    hooks:
+        source: src
+        plugin: dump
+        organize:
+            configure: meta/hooks/configure
+            avahi-help: bin/avahi-help
+            config: bin/config
