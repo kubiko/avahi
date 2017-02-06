@@ -1,4 +1,4 @@
-name: avahi-ondra
+name: avahi
 version: "0.6.32"
 summary: avahi-daemon 
 description: |
@@ -48,12 +48,12 @@ parts:
           - --with-avahi-group=root
           - --with-distro=debian
           - --disable-gobject
-          - --sysconfdir=/var/snap/avahi-ondra/common/etc
-          - --localstatedir=/var/snap/avahi-ondra/common/var
+          - --sysconfdir=/var/snap/avahi/common/etc
+          - --localstatedir=/var/snap/avahi/common/var
         build-packages: [gettext, intltool, libexpat1-dev, libdaemon-dev, libglib2.0-dev, xmltoman]
         organize:
-          var/snap/avahi-ondra/common/etc: etc
-          var/snap/avahi-ondra/common/var: var
+          var/snap/avahi/common/etc: etc
+          var/snap/avahi/common/var: var
         stage:
           - -var/snap
 
