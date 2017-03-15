@@ -28,7 +28,7 @@ apps:
 parts:
     avahi:
         plugin: autotools
-        source: https://github.com/kubiko/avahi.git
+        source: .
         configflags:
           - --prefix=/usr
           - --disable-qt3
