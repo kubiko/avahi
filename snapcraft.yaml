@@ -58,7 +58,7 @@ parts:
           - -var/snap
 
     hooks:
-        source: src
+        source: snap
         plugin: dump
         organize:
             configure: meta/hooks/configure
