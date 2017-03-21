@@ -58,6 +58,9 @@ parts:
           - --sysconfdir=/var/snap/avahi/common/etc
           - --localstatedir=/var/snap/avahi/common/var
         build-packages: [gettext, intltool, libexpat1-dev, libdaemon-dev, libglib2.0-dev, xmltoman]
+        install: |
+            # add tag with txt record os=snappy
+            sed -i '/<\/service>/ i\    <txt-record>os=snappy</txt-record>' $SNAPCRAFT_PART_INSTALL/var/snap/avahi/common/etc/avahi/services/ssh.service
         organize:
           var/snap/avahi/common/etc: etc
           var/snap/avahi/common/var: var
