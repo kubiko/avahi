@@ -44,3 +44,9 @@ else
     echo "This is install/updae invocation"
     snapctl set version=$SNAP_VERSION
 fi
+
+MODEL_NAME=$(echo -en "GET /v2/assertions/model HTTP/1.0\r\n\r\n" | nc -U /run/snapd.socket | grep -m 1 "model: " | awk '{ print $2}')
+if [ "x" != "x$MODEL_NAME" ]; then
+    sed -i '/snappy-model/,+1 d' $SNAP_COMMON/etc/avahi/services/ssh.service
+    sed -i '/<\/service>/ i\    <txt-record>snappy-model='"$MODEL_NAME"'</txt-record>' $SNAP_COMMON/etc/avahi/services/ssh.service
+fi
