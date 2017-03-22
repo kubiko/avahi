@@ -5,16 +5,15 @@ set -x
 exec >> $SNAP_COMMON/configure-hook.log 2>&1
 echo -e "\n$(date '+%Y-%m-%d %H:%M:%S') configure-hook: Entering hook"
 
-mkdir -p $SNAP_COMMON/var/run/
-mkdir -p $SNAP_COMMON/etc
 
-if [ ! -d $SNAP_COMMON/etc/avahi ]; then
-    cp -r $SNAP/etc/avahi/ $SNAP_COMMON/etc
-fi
+# configure hook can be called as result of: snap set / install / update / rollback. Handle each independently
+# version key to track reason for configure hook call
+LAST_REVISION=$(snapctl get revision)
+# this is revision before last installed one, used to track rollback
+REVERT_REVISION=$(snapctl get rev-revision)
 
-VERSION=$(snapctl get version)
-# handle bug when snap uninstall will not clear value of 'version' key
-if [ "x$VERSION" == "x$SNAP_VERSION" ] && [ -e $SNAP_COMMON/etc/avahi/avahi-daemon.conf ]; then
+# handle bug when snap uninstall will not clear value of 'revision' key
+if [ "x$LAST_REVISION" == "x$SNAP_REVISION" ] &&  [ -e $SNAP_COMMON/etc/avahi/avahi-daemon.conf ]; then
     echo "Handle config change"
     # read key list
     . $SNAP/bin/config
@@ -34,19 +33,41 @@ if [ "x$VERSION" == "x$SNAP_VERSION" ] && [ -e $SNAP_COMMON/etc/avahi/avahi-daem
         value=$(snapctl get ${UNDEFINED_K[i]#?})
         if [ "x$value" != "x" ]; then
             echo -e "\tupdating key: ${UNDEFINED_K[i]#?} with $value"
-            cat $SNAP_COMMON/etc/avahi/avahi-daemon.conf | sed "s/.*${UNDEFINED_K[i]#?}.*/${UNDEFINED_K[i]#?}=${value}/g" > $SNAP_COMMON/etc/avahi/avahi-daemon.conf.back
             # sed -i 's/.*${DEFINED_K[$i]}.*/${UNDEFINED_K[$i]#?}=${value}/g' $SNAP_COMMON/etc/avahi/avahi-daemon.conf.back
             cp $SNAP_COMMON/etc/avahi/avahi-daemon.conf.back $SNAP_COMMON/etc/avahi/avahi-daemon.conf
         fi
     done
-else
-    # this is fresh install or update
-    echo "This is install/updae invocation"
-    snapctl set version=$SNAP_VERSION
-fi
+elif [ "x$LAST_REVISION" == "x" ] || [ ! -d $SNAP_COMMON/etc ]; then
+    # this is fresh install or previus version has no userdata
+    echo "detected fresh install or missing previous user data, populate with fresh one"
+    mkdir -p $SNAP_COMMON/var/run/
+    mkdir -p $SNAP_COMMON/etc/
 
-MODEL_NAME=$(echo -en "GET /v2/assertions/model HTTP/1.0\r\n\r\n" | nc -U /run/snapd.socket | grep -m 1 "model: " | awk '{ print $2}')
-if [ "x" != "x$MODEL_NAME" ]; then
-    sed -i '/snappy-model/,+1 d' $SNAP_COMMON/etc/avahi/services/ssh.service
-    sed -i '/<\/service>/ i\    <txt-record>snappy-model='"$MODEL_NAME"'</txt-record>' $SNAP_COMMON/etc/avahi/services/ssh.service
+    if [ ! -d $SNAP_COMMON/etc/avahi ]; then
+        cp -r $SNAP/etc/avahi/ $SNAP_COMMON/etc
+    fi
+    MODEL_NAME=$(echo -en "GET /v2/assertions/model HTTP/1.0\r\n\r\n" | nc -U /run/snapd.socket | grep -m 1 "model: " | awk '{ print $2}')
+    if [ "x" != "x$MODEL_NAME" ]; then
+        sed -i '/snappy-model/,+1 d' $SNAP_COMMON/etc/avahi/services/ssh.service
+        sed -i '/<\/service>/ i\    <txt-record>snappy-model='"$MODEL_NAME"'</txt-record>' $SNAP_COMMON/etc/avahi/services/ssh.service
+    fi
+elif [ "x$LAST_REVISION" != "x$SNAP_REVISION" ] && [ "x$REVERT_REVISION" == "x$SNAP_REVISION" ]; then
+    # this is rollback: update logging properties
+    echo "detected rollback"
+    # this is potentially rollback, we better do nothing
+    # empty previous revision key
+    snapctl set rev-revision=""
+elif [ "x$LAST_REVISION" != "x$SNAP_REVISION" ]; then
+    # this is update:  update logging properties
+    echo "detected udpate"
+    MODEL_NAME=$(echo -en "GET /v2/assertions/model HTTP/1.0\r\n\r\n" | nc -U /run/snapd.socket | grep -m 1 "model: " | awk '{ print $2}')
+    if [ "x" != "x$MODEL_NAME" ]; then
+        sed -i '/snappy-model/,+1 d' $SNAP_COMMON/etc/avahi/services/ssh.service
+        sed -i '/<\/service>/ i\    <txt-record>snappy-model='"$MODEL_NAME"'</txt-record>' $SNAP_COMMON/etc/avahi/services/ssh.service
+    fi
+    # add here more custom migration steps
+    # update revert revision key
+    snapctl set rev-revision=$LAST_REVISION
 fi
+snapctl set revision=$SNAP_REVISION
+
