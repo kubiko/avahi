@@ -12,12 +12,12 @@ description: |
 confinement: strict
 grade: stable
 
+# exose services folder for other snaps
 slots:
-  # expose service directory
   services:
     interface: content
     write:
-      - $SNAP_COMMON/etc/avahi/services/
+      - $SNAP_COMMON/etc/avahi/services
 
 apps:
     avahi-daemon:
