@@ -19,22 +19,21 @@ if [ "x$LAST_REVISION" == "x$SNAP_REVISION" ] &&  [ -e $SNAP_COMMON/etc/avahi/av
     . $SNAP/bin/config
     echo -e "Checking curretly defined keys"
     for ((i=0;i<${#DEFINED_K[@]};++i)); do
-        value=$(snapctl get ${DEFINED_K[$i]})
+        key=${DEFINED_K[$i]}
+        value=$(snapctl get ${key})
         if [ "x$value" != "x" ]; then
-            echo -e "\tupdating key: ${key} with ${value}"
-            cat $SNAP_COMMON/etc/avahi/avahi-daemon.conf | sed "s/.*${DEFINED_K[$i]}.*/${DEFINED_K[$i]}=${value}/g" > $SNAP_COMMON/etc/avahi/avahi-daemon.conf.back
-            cp $SNAP_COMMON/etc/avahi/avahi-daemon.conf.back $SNAP_COMMON/etc/avahi/avahi-daemon.conf
-            # sed --in-place 's/.*${DEFINED_K[$i]}.*/${DEFINED_K[$i]}=${value}/g' $SNAP_COMMON/etc/avahi/avahi-daemon.conf.back
+            echo -e "\tupdating existing key: ${key} with ${value}"
+            sed -i "s/.*${key}.*/${key}=${value}/g" $SNAP_COMMON/etc/avahi/avahi-daemon.conf
         fi
     done
 
     echo -e "Checking keys with no set value:"
     for ((i=0;i<${#UNDEFINED_K[@]};++i)); do
-        value=$(snapctl get ${UNDEFINED_K[i]#?})
+        key=${UNDEFINED_K[$i]#?}
+        value=$(snapctl get ${key})
         if [ "x$value" != "x" ]; then
-            echo -e "\tupdating key: ${UNDEFINED_K[i]#?} with $value"
-            # sed -i 's/.*${DEFINED_K[$i]}.*/${UNDEFINED_K[$i]#?}=${value}/g' $SNAP_COMMON/etc/avahi/avahi-daemon.conf.back
-            cp $SNAP_COMMON/etc/avahi/avahi-daemon.conf.back $SNAP_COMMON/etc/avahi/avahi-daemon.conf
+            echo -e "\tupdating undefined key: ${key} with ${value}"
+            sed -i "s/.*${key}.*/${key}=${value}/g" $SNAP_COMMON/etc/avahi/avahi-daemon.conf
         fi
     done
 elif [ "x$LAST_REVISION" == "x" ] || [ ! -d $SNAP_COMMON/etc ]; then
