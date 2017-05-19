@@ -1587,7 +1587,7 @@ int main(int argc, char *argv[]) {
             goto finish;
         }
 
-        if ((pid = daemon_pid_file_is_running()) >= 0) {
+        if ((pid = daemon_pid_file_is_running()) > 0) {
             avahi_log_error("Daemon already running on PID %u", pid);
             goto finish;
         }
