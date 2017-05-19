@@ -71,9 +71,8 @@ parts:
           - -var/snap
 
     hooks:
-        source: snap
+        source: snap-resources
         plugin: dump
         organize:
-            configure: meta/hooks/configure
             avahi-help: bin/avahi-help
             config: bin/config
