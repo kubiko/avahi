@@ -12,9 +12,9 @@ description: |
 confinement: strict
 grade: stable
 
-# exose services folder for other snaps
+# expose services folder for other snaps
 slots:
-  services:
+  services-content:
     interface: content
     write:
       - $SNAP_COMMON/etc/avahi/services
@@ -23,11 +23,23 @@ apps:
     avahi-daemon:
         command: avahi-daemon -f $SNAP_COMMON/etc/avahi/avahi-daemon.conf --no-drop-root --debug
         daemon: simple
-        plugs: [network, network-bind, network-control]
+        plugs:
+          - network
+          - network-bind
+          - network-control
+        slots:
+          - avahi-observe
+          - avahi-control
 
     restart-avahi-daemon:
         command: echo "run as root!" && avahi-daemon -r
-        plugs: [network, network-bind, network-control]
+        plugs:
+          - network
+          - network-bind
+          - network-control
+        slots:
+          - avahi-observe
+          - avahi-control
 
     help:
         command: avahi-help
@@ -50,14 +62,13 @@ parts:
           - --disable-monodoc
           - --disable-manpages
           - --disable-xmltoman
-          - --disable-dbus
           - --with-avahi-user=root
           - --with-avahi-group=root
           - --with-distro=debian
           - --disable-gobject
           - --sysconfdir=/var/snap/avahi/common/etc
           - --localstatedir=/var/snap/avahi/common/var
-        build-packages: [gettext, intltool, libexpat1-dev, libdaemon-dev, libglib2.0-dev, xmltoman]
+        build-packages: [gettext, intltool, libexpat1-dev, libdaemon-dev, libglib2.0-dev, xmltoman, libdbus-1-dev]
         prepare: |
             # disable chown call, as it won't pass security confinement
             sed -i 's#chown(#// chown(#g' avahi-daemon/main.c
