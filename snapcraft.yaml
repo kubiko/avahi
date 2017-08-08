@@ -1,5 +1,6 @@
 name: avahi
-version: "0.6.32"
+version: 0
+version-script: git describe --tags | cut -c 2-
 summary: avahi-daemon 
 description: |
   avahi service daemon
