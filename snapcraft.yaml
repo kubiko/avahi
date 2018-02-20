@@ -19,6 +19,10 @@ slots:
     interface: content
     write:
       - $SNAP_COMMON/etc/avahi/services
+  daemon-socket:
+    interface: content
+    write:
+      - $SNAP_COMMON/var/run/avahi-daemon
 
 apps:
     avahi-daemon:
