@@ -74,6 +74,7 @@ parts:
           - --sysconfdir=/var/snap/avahi/common/etc
           - --localstatedir=/var/snap/avahi/common/var
         build-packages: [gettext, intltool, libexpat1-dev, libdaemon-dev, libglib2.0-dev, xmltoman, libdbus-1-dev]
+        stage-packages: [libdaemon0]
         prepare: |
             # disable chown call, as it won't pass security confinement
             sed -i 's#chown(#// chown(#g' avahi-daemon/main.c
