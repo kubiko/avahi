@@ -17,10 +17,12 @@ grade: stable
 slots:
   services-content:
     interface: content
+    content: avahi-services
     write:
       - $SNAP_COMMON/etc/avahi/services
   daemon-socket:
     interface: content
+    content: avahi-daemon-socket
     write:
       - $SNAP_COMMON/var/run/avahi-daemon
 
