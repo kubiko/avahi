@@ -89,9 +89,7 @@ parts:
         stage:
           - -var/snap
 
+    # snap helper scripts
     hooks:
         source: snap-resources
         plugin: dump
-        organize:
-            avahi-help: bin/avahi-help
-            config: bin/config
