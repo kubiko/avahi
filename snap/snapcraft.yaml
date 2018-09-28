@@ -27,9 +27,13 @@ slots:
       - $SNAP_COMMON/var/run/avahi-daemon
 
 apps:
-    avahi-daemon:
-        command: avahi-daemon -f $SNAP_COMMON/etc/avahi/avahi-daemon.conf --no-drop-root --debug
+    daemon:
+        command: usr/sbin/avahi-daemon -f $SNAP_COMMON/etc/avahi/avahi-daemon.conf --no-drop-root --debug
         daemon: simple
+        adapter: none
+        environment:
+          PATH: $SNAP/usr/sbin:$SNAP/usr/bin:$SNAP/sbin:$SNAP/bin:$PATH
+          LD_LIBRARY_PATH: $SNAP_LIBRARY_PATH:$LD_LIBRARY_PATH:$SNAP/lib:$SNAP/usr/lib:$SNAP/usr/lib/${SNAPCRAFT_ARCH_TRIPLET}
         plugs:
           - network
           - network-bind
@@ -38,18 +42,44 @@ apps:
           - avahi-observe
           - avahi-control
 
-    restart-avahi-daemon:
-        command: echo "run as root!" && avahi-daemon -r
+    browse:
+        command: usr/bin/avahi-browse
+        adapter: none
+        environment:
+          PATH: $SNAP/usr/sbin:$SNAP/usr/bin:$SNAP/sbin:$SNAP/bin:$PATH
+          LD_LIBRARY_PATH: $SNAP_LIBRARY_PATH:$LD_LIBRARY_PATH:$SNAP/lib:$SNAP/usr/lib:$SNAP/usr/lib/${SNAPCRAFT_ARCH_TRIPLET}
         plugs:
           - network
-          - network-bind
-          - network-control
-        slots:
-          - avahi-observe
-          - avahi-control
+
+    publish:
+        command: usr/bin/avahi-publish
+        adapter: none
+        environment:
+          PATH: $SNAP/usr/sbin:$SNAP/usr/bin:$SNAP/sbin:$SNAP/bin:$PATH
+          LD_LIBRARY_PATH: $SNAP_LIBRARY_PATH:$LD_LIBRARY_PATH:$SNAP/lib:$SNAP/usr/lib:$SNAP/usr/lib/${SNAPCRAFT_ARCH_TRIPLET}
+        plugs:
+          - network
+    resolve:
+        command: usr/bin/avahi-resolve
+        adapter: none
+        environment:
+          PATH: $SNAP/usr/sbin:$SNAP/usr/bin:$SNAP/sbin:$SNAP/bin:$PATH
+          LD_LIBRARY_PATH: $SNAP_LIBRARY_PATH:$LD_LIBRARY_PATH:$SNAP/lib:$SNAP/usr/lib:$SNAP/usr/lib/${SNAPCRAFT_ARCH_TRIPLET}
+        plugs:
+          - network
+
+    set-host-name:
+        command: usr/bin/avahi-set-host-name
+        adapter: none
+        environment:
+          PATH: $SNAP/usr/sbin:$SNAP/usr/bin:$SNAP/sbin:$SNAP/bin:$PATH
+          LD_LIBRARY_PATH: $SNAP_LIBRARY_PATH:$LD_LIBRARY_PATH:$SNAP/lib:$SNAP/usr/lib:$SNAP/usr/lib/${SNAPCRAFT_ARCH_TRIPLET}
+        plugs:
+          - network
 
     help:
-        command: avahi-help
+        command: bin/avahi-help
+        adapter: none
 
 parts:
     avahi:
@@ -74,23 +104,33 @@ parts:
           - --with-avahi-group=root
           - --with-distro=debian
           - --disable-gobject
-          - --sysconfdir=/var/snap/avahi/common/etc
-          - --localstatedir=/var/snap/avahi/common/var
-        build-packages: [gettext, intltool, libexpat1-dev, libdaemon-dev, libglib2.0-dev, xmltoman, libdbus-1-dev]
-        stage-packages: [libdaemon0]
-        prepare: |
+          - --sysconfdir=/var/snap/${SNAPCRAFT_PROJECT_NAME}/common/etc
+          - --localstatedir=/var/snap/${SNAPCRAFT_PROJECT_NAME}/common/var
+        build-packages:
+          - gettext
+          - intltool
+          - libexpat1-dev
+          - libdaemon-dev
+          - libglib2.0-dev
+          - xmltoman
+          - libdbus-1-dev
+        stage-packages:
+          - libdaemon0
+        override-pull: |
+            snapcraftctl pull
             # disable chown call, as it won't pass security confinement
             sed -i 's#chown(#// chown(#g' avahi-daemon/main.c
-        install: |
+        override-build: |
+            snapcraftctl build
             # add tag with txt record os=snappy
-            sed -i '/<\/service>/ i\    <txt-record>os=snappy</txt-record>' $SNAPCRAFT_PART_INSTALL/var/snap/avahi/common/etc/avahi/services/ssh.service
+            sed -i '/<\/service>/ i\    <txt-record>os=snappy</txt-record>' $SNAPCRAFT_PART_INSTALL/var/snap/${SNAPCRAFT_PROJECT_NAME}/common/etc/avahi/services/ssh.service
         organize:
-          var/snap/avahi/common/etc: etc
-          var/snap/avahi/common/var: var
+          var/snap/${SNAPCRAFT_PROJECT_NAME}/common/etc: etc
+          var/snap/${SNAPCRAFT_PROJECT_NAME}/common/var: var
         stage:
           - -var/snap
 
     # snap helper scripts
-    hooks:
-        source: snap-resources
+    glue:
+        source: glue
         plugin: dump
