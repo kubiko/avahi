@@ -20,11 +20,6 @@ slots:
     content: avahi-services
     write:
       - $SNAP_COMMON/etc/avahi/services
-  daemon-socket:
-    interface: content
-    content: avahi-daemon-socket
-    write:
-      - $SNAP_COMMON/var/run/avahi-daemon
 
 apps:
     daemon:
@@ -105,7 +100,7 @@ parts:
           - --with-distro=debian
           - --disable-gobject
           - --sysconfdir=/var/snap/${SNAPCRAFT_PROJECT_NAME}/common/etc
-          - --localstatedir=/var/snap/${SNAPCRAFT_PROJECT_NAME}/common/var
+          - --localstatedir=/var
         build-packages:
           - gettext
           - intltool
