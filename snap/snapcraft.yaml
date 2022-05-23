@@ -21,6 +21,7 @@ architectures:
     - build-on: armhf
     - build-on: arm64
     - build-on: amd64
+    - build-on: riscv64
 
 # expose services folder for other snaps
 slots:
