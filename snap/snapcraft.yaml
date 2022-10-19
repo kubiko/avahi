@@ -31,14 +31,15 @@ slots:
     write:
       - $SNAP_COMMON/etc/avahi/services
 
+environment:
+    PATH: $SNAP/usr/sbin:$SNAP/usr/bin:$SNAP/sbin:$SNAP/bin:$PATH
+    LD_LIBRARY_PATH: $SNAP_LIBRARY_PATH:$LD_LIBRARY_PATH:$SNAP/lib:$SNAP/usr/lib:$SNAP/usr/lib/${SNAPCRAFT_ARCH_TRIPLET}:$SNAP/lib/${SNAPCRAFT_ARCH_TRIPLET}
+
 apps:
     daemon:
         command: usr/sbin/avahi-daemon -f $SNAP_COMMON/etc/avahi/avahi-daemon.conf --no-drop-root --debug
         daemon: simple
         adapter: none
-        environment:
-          PATH: $SNAP/usr/sbin:$SNAP/usr/bin:$SNAP/sbin:$SNAP/bin:$PATH
-          LD_LIBRARY_PATH: $SNAP_LIBRARY_PATH:$LD_LIBRARY_PATH:$SNAP/lib:$SNAP/usr/lib:$SNAP/usr/lib/${SNAPCRAFT_ARCH_TRIPLET}
         plugs:
           - network
           - network-bind
@@ -50,36 +51,24 @@ apps:
     browse:
         command: usr/bin/avahi-browse
         adapter: none
-        environment:
-          PATH: $SNAP/usr/sbin:$SNAP/usr/bin:$SNAP/sbin:$SNAP/bin:$PATH
-          LD_LIBRARY_PATH: $SNAP_LIBRARY_PATH:$LD_LIBRARY_PATH:$SNAP/lib:$SNAP/usr/lib:$SNAP/usr/lib/${SNAPCRAFT_ARCH_TRIPLET}
         plugs:
           - network
 
     publish:
         command: usr/bin/avahi-publish
         adapter: none
-        environment:
-          PATH: $SNAP/usr/sbin:$SNAP/usr/bin:$SNAP/sbin:$SNAP/bin:$PATH
-          LD_LIBRARY_PATH: $SNAP_LIBRARY_PATH:$LD_LIBRARY_PATH:$SNAP/lib:$SNAP/usr/lib:$SNAP/usr/lib/${SNAPCRAFT_ARCH_TRIPLET}
         plugs:
           - network
 
     resolve:
         command: usr/bin/avahi-resolve
         adapter: none
-        environment:
-          PATH: $SNAP/usr/sbin:$SNAP/usr/bin:$SNAP/sbin:$SNAP/bin:$PATH
-          LD_LIBRARY_PATH: $SNAP_LIBRARY_PATH:$LD_LIBRARY_PATH:$SNAP/lib:$SNAP/usr/lib:$SNAP/usr/lib/${SNAPCRAFT_ARCH_TRIPLET}
         plugs:
           - network
 
     set-host-name:
         command: usr/bin/avahi-set-host-name
         adapter: none
-        environment:
-          PATH: $SNAP/usr/sbin:$SNAP/usr/bin:$SNAP/sbin:$SNAP/bin:$PATH
-          LD_LIBRARY_PATH: $SNAP_LIBRARY_PATH:$LD_LIBRARY_PATH:$SNAP/lib:$SNAP/usr/lib:$SNAP/usr/lib/${SNAPCRAFT_ARCH_TRIPLET}
         plugs:
           - network
 
@@ -148,6 +137,7 @@ parts:
         stage-packages:
           - jq
           - libjq1
+          - libnss-mdns
 
 build-packages:
     - gettext
