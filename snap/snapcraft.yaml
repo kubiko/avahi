@@ -84,6 +84,15 @@ parts:
       - -usr/lib/avahi
       - -var
 
+  # snap helper scripts
+  glue:
+    source: glue
+    plugin: dump
+    stage-packages:
+      - jq
+      - libjq1
+      - libnss-mdns
+
 build-packages:
   - gettext
   - intltool
