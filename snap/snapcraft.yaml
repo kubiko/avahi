@@ -1,0 +1,24 @@
+name: avahi
+summary: avahi-daemon
+description: |
+  avahi service daemon
+
+  Avahi is a free, LGPL implementation of DNS Service Discovery (DNS-SD RFC 6763) over Multicast DNS (mDNS RFC 6762),
+  commonly known as and compatible with Apple Bonjour primarily targetting Linux.
+
+  Copyright 2004-2015 by the Avahi developers.
+
+base: core20
+confinement: strict
+grade: stable
+
+environment:
+  PATH: $SNAP/usr/bin:$PATH
+  LD_LIBRARY_PATH: $SNAP/usr/lib/${SNAPCRAFT_ARCH_TRIPLET}:$SNAP/usr/lib
+
+architectures:
+  - build-on: armhf
+  - build-on: arm64
+  - build-on: amd64
+  - build-on: riscv64
+
