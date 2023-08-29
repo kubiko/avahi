@@ -8,14 +8,14 @@ description: |
 
   Copyright 2004-2015 by the Avahi developers.
 
-base: core20
+base: core22
 confinement: strict
 grade: stable
 adopt-info: avahi
 
 environment:
   PATH: $SNAP/usr/bin:$PATH
-  LD_LIBRARY_PATH: $SNAP/usr/lib/${SNAPCRAFT_ARCH_TRIPLET}:$SNAP/usr/lib
+  LD_LIBRARY_PATH: $SNAP/usr/lib/${CRAFT_ARCH_TRIPLET}:$SNAP/usr/lib
 
 architectures:
   - build-on: armhf
@@ -35,7 +35,6 @@ apps:
   daemon:
     command: usr/sbin/avahi-daemon -f $SNAP_COMMON/etc/avahi/avahi-daemon.conf --no-drop-root --debug
     daemon: simple
-    adapter: none
     plugs:
       - network
       - network-bind
@@ -46,31 +45,26 @@ apps:
 
   browse:
     command: usr/bin/avahi-browse
-    adapter: none
     plugs:
       - network
 
   publish:
     command: usr/bin/avahi-publish
-    adapter: none
     plugs:
       - network
 
   resolve:
       command: usr/bin/avahi-resolve
-      adapter: none
       plugs:
         - network
 
   set-host-name:
     command: usr/bin/avahi-set-host-name
-    adapter: none
     plugs:
       - network
 
   help:
     command: bin/avahi-help
-    adapter: none
 
 parts:
   avahi:
@@ -103,7 +97,7 @@ parts:
       - libdaemon0
       - libevent-2.1-7
     override-pull: |
-      snapcraftctl pull
+      craftctl default
       # depending on a channel in the snap store, build last release tag or master
       last_released_tag="$(snap info avahi | awk '$1 == "latest/beta:" { print $2 }')"
       last_commited_tag=$(git describe --abbrev=0 --tags)
@@ -112,16 +106,16 @@ parts:
       # Closing beta channel allows rebuild of the stable release, otherwise master is used
       if [ "${last_commited_tag:1}" != "${last_released_tag}" ]; then
           git checkout ${last_commited_tag}
-          snapcraftctl set-version $(echo ${last_commited_tag} | cut -c 2- )
+          craftctl set version=$(echo ${last_commited_tag} | cut -c 2- )
       else
-          snapcraftctl set-version $(git describe --tags | cut -c 2-)
+          craftctl set version=$(git describe --tags | cut -c 2-)
       fi
     override-build: |
-        snapcraftctl build
+        craftctl default
         # add tag with txt record os=snappy
         sed -i \
             '/<\/service>/ i\    <txt-record>os=snappy</txt-record>' \
-            $SNAPCRAFT_PART_INSTALL/var/snap/${SNAPCRAFT_PROJECT_NAME}/common/etc/avahi/services/ssh.service
+            $CRAFT_PART_INSTALL/var/snap/${SNAPCRAFT_PROJECT_NAME}/common/etc/avahi/services/ssh.service
     organize:
       var/snap/${SNAPCRAFT_PROJECT_NAME}/common/etc:              etc
       var/snap/${SNAPCRAFT_PROJECT_NAME}/common/usr/share/dbus-1: usr/share/dbus-1
