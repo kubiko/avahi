@@ -5,8 +5,8 @@ logger "avahi.hook.${hook_name}: entering the hook" || true
 
 mkdir -p "${SNAP_COMMON}/etc" "${SNAP_COMMON}/usr/share"
 
-[ ! -d "${SNAP_COMMON}/etc/avahi/services" ] && cp -r ${SNAP}/etc/avahi ${SNAP_COMMON}/etc/avahi
+[ ! -d "${SNAP_COMMON}/etc/avahi/services" ] && cp -r "${SNAP}/etc/avahi" "${SNAP_COMMON}/etc/avahi"
 [ ! -d "${SNAP_COMMON}/usr/share/dbus-1" ] && cp -r "${SNAP}/usr/share/dbus-1" "${SNAP_COMMON}/usr/share"
-[ ! -e "${SNAP_COMMON}/usr/share/avahi/avahi-service.dtd" ] && cp -r ${SNAP}/usr/share/avahi ${SNAP_COMMON}/usr/share/avahi
+[ ! -e "${SNAP_COMMON}/usr/share/avahi/avahi-service.dtd" ] && cp -r "${SNAP}/usr/share/avahi" "${SNAP_COMMON}/usr/share/avahi"
 
 logger "avahi.hook.${hook_name}: hook finished successfully" || true
